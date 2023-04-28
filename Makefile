@@ -10,3 +10,9 @@ install:
 activate:
 	@echo "Activating virtual environment"
 	poetry shell
+
+download_data: src/download.py
+	@echo "Downloading data..."
+	poetry run python src/download.py
+
+setup: initialize_git install download_data
