@@ -4,6 +4,41 @@ from shutil import move, rmtree
 from urllib import request
 from zipfile import BadZipFile, ZipFile
 
+import progressbar
+
+
+class ProgressBar:
+    """
+    Class for progress bar for it's usage in `urlretrieve`
+    """
+
+    def __init__(self) -> None:
+        self.pbar = None
+
+    def __call__(
+        self, block_num: int, block_size: int, total_size: int
+    ) -> None:
+        """
+        Parameters
+        ----------
+        block_num : int
+            Blocks number of the downloaded file
+        block_size : int
+            Size of the one block
+        total_size : int
+            Total size of the downloaded file
+        """
+        if not self.pbar:
+            self.pbar = progressbar.ProgressBar(maxval=total_size)
+            self.pbar.start()
+
+        downloaded = block_num * block_size
+        if downloaded < total_size:
+            self.pbar.update(downloaded)
+        else:
+            self.pbar.finish()
+
+
 DOWNLOAD_ROOT = (
     "https://archive.org/download/idrid/idrid/C.%20Localization.zip"
 )
@@ -23,7 +58,7 @@ def download() -> None:
     os.makedirs(DATASET_PATH, exist_ok=True)
     zip_path = os.path.join(DATASET_PATH, "localization.zip")
     if not os.path.exists(zip_path):
-        request.urlretrieve(DOWNLOAD_ROOT, zip_path)
+        request.urlretrieve(DOWNLOAD_ROOT, zip_path, reporthook=ProgressBar())
     try:
         with ZipFile(zip_path) as zip_dataset:
             zip_dataset.extractall(path=os.path.join(DATASET_PATH))
