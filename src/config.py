@@ -93,3 +93,19 @@ class ModelConfig(BaseModel):
     """
 
     model: str
+
+
+class LossConfig(BaseModel):
+    """
+    Class for defining loss function config
+
+    Parameters
+    ----------
+    type: str
+        Name of the loss function
+    params: Dict
+        Dict of params for specified loss function
+    """
+
+    type: str
+    params: Dict
