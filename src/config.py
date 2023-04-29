@@ -126,3 +126,19 @@ class OptimizerConfig(BaseModel):
 
     type: str
     params: Dict
+
+
+class LearningRateSchedulerConfig(BaseModel):
+    """
+    Class for defining learning rate scheduler
+
+    Parameters
+    ----------
+    type: str
+        Name of the learning rate scheduler
+    params: Dict
+        Dictionary of params for learning rate scheduler
+    """
+
+    type: str
+    params: Dict
