@@ -37,7 +37,8 @@ model: "VGGRegressor"
 
 loss: 
   type: "MSE"
-  regularization: "none"
+  params: 
+    reduction: "mean"
 
 optimizer:
   type: "Adam"
