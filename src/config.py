@@ -155,3 +155,34 @@ class LoggerConfig(BaseModel):
     """
 
     path: str
+
+
+class Config(BaseModel):
+    """
+    Class for whole config for experiment
+
+    Parameters
+    ----------
+    data: DatasetConfig
+        Config part for dataset
+    transforms: TransformationsConfig
+        Config part for transformations
+    model: ModelConfig
+        Config part for model
+    loss: LossConfig
+        Config part for loss function
+    optimizer: OptimizerConfig
+        Config part for optimizer
+    lr_scheduler: LearningRateSchedulerConfig
+        Config part for learning rate scheduler
+    logger: LoggerConfig
+        Config part for logger
+    """
+
+    data: DatasetConfig
+    transforms: TransformationsConfig
+    model: ModelConfig
+    loss: LossConfig
+    optimizer: OptimizerConfig
+    lr_scheduler: LearningRateSchedulerConfig
+    logger: LoggerConfig
