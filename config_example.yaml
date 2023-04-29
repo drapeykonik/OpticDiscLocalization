@@ -33,7 +33,8 @@ transforms:
       params:
         size: [512, 512]
 
-model: "VGGRegressor"
+model: 
+  name: "VGGRegressor"
 
 loss: 
   type: "MSE"

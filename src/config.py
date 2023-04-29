@@ -88,11 +88,11 @@ class ModelConfig(BaseModel):
 
     Parameters
     ----------
-    model: str
+    name: str
         Model name
     """
 
-    model: str
+    name: str
 
 
 class LossConfig(BaseModel):
