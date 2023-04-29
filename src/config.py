@@ -109,3 +109,20 @@ class LossConfig(BaseModel):
 
     type: str
     params: Dict
+
+
+class OptimizerConfig(BaseModel):
+    """
+    Class for defining optimizer config for
+    model training
+
+    Parameters
+    ----------
+    type: str
+        Name of the optimizer
+    params: Dict
+        Dictionary of params for optimizer
+    """
+
+    type: str
+    params: Dict
