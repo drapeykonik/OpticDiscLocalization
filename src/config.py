@@ -142,3 +142,16 @@ class LearningRateSchedulerConfig(BaseModel):
 
     type: str
     params: Dict
+
+
+class LoggerConfig(BaseModel):
+    """
+    Class for defining experiments logger
+
+    Parameters
+    ----------
+    path: str
+        Path to logs folder
+    """
+
+    path: str
