@@ -1,7 +1,9 @@
 """File for experiment config defining"""
-from typing import Dict, List
+import json
+from typing import Dict, List, Type, TypeVar
 
 from pydantic import BaseModel
+from yaml import safe_load
 
 
 class DatasetConfig(BaseModel):
@@ -157,6 +159,9 @@ class LoggerConfig(BaseModel):
     path: str
 
 
+T = TypeVar("T", bound="Config")
+
+
 class Config(BaseModel):
     """
     Class for whole config for experiment
@@ -186,3 +191,17 @@ class Config(BaseModel):
     optimizer: OptimizerConfig
     lr_scheduler: LearningRateSchedulerConfig
     logger: LoggerConfig
+
+    @classmethod
+    def parse(cls: Type[T], path: str) -> T:
+        """
+        Class method for parsing yaml config specified by path
+
+        Parameters
+        ----------
+        path: str
+            Path to yaml config file
+        """
+        with open(path, "r") as yaml_cfg:
+            cfg = cls.parse_raw(json.dumps(safe_load(yaml_cfg)))
+        return cfg
