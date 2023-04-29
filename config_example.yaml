@@ -12,24 +12,24 @@ data:
 
 transforms:
   train:
-    transform: "Crop"
+    - transform: "Crop"
       params:
         size: [[288, 0], [4000, 2848]]
-    transform: "Resize"
+    - transform: "Resize"
       params:
         size: [512, 512]
   valid:
-    transform: "Crop"
+    - transform: "Crop"
       params:
         size: [[288, 0], [4000, 2848]]
-    transform: "Resize"
+    - transform: "Resize"
       params:
         size: [512, 512]
   test:
-    transform: "Crop"
+    - transform: "Crop"
       params:
         size: [[288, 0], [4000, 2848]]
-    transform: "Resize"
+    - transform: "Resize"
       params:
         size: [512, 512]
 
