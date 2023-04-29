@@ -80,3 +80,16 @@ class TransformationsConfig(BaseModel):
     train: List[TransformConfig]
     valid: List[TransformConfig]
     test: List[TransformConfig]
+
+
+class ModelConfig(BaseModel):
+    """
+    Class for defining model config
+
+    Parameters
+    ----------
+    model: str
+        Model name
+    """
+
+    model: str
