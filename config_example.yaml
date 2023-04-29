@@ -1,0 +1,28 @@
+data:
+  dataset_root: "data/processed/localization"
+  train_dataset: "data/processed/localization/train"
+  valid_dataset: "data/processed/localization/valid"
+  test_dataset: "data/processed/localization/test"
+  train_ann: "data/processed/localization/train/location.json"
+  valid_ann: "data/processed/localization/valid/location.json"
+  test_ann: "data/processed/localization/test/location.json"
+  train_batch_size: 8
+  valid_batch_size: 1
+  test_batch_size: 1
+
+transforms:
+  train:
+    transform: "Crop"
+      size: [[288, 0], [4000, 2848]]
+    transform: "Resize"
+      size: [512, 512]
+  valid:
+    transform: "Crop"
+      size: [[288, 0], [4000, 2848]]
+    transform: "Resize"
+      size: [512, 512]
+  test:
+    transform: "Crop"
+      size: [[288, 0], [4000, 2848]]
+    transform: "Resize"
+      size: [512, 512]
