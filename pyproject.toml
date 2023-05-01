@@ -14,6 +14,8 @@ joblib = "^1.2.0"
 interrogate = "^1.5.0"
 notebook = "^6.5.4"
 progressbar = "^2.5"
+scikit-learn = "^1.2.2"
+pandas = "^2.0.1"
 pydantic = "^1.10.7"
 
 [tool.poetry.group.dev.dependencies]
