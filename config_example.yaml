@@ -3,9 +3,9 @@ data:
   train_dataset: "data/processed/localization/train"
   valid_dataset: "data/processed/localization/valid"
   test_dataset: "data/processed/localization/test"
-  train_ann: "data/processed/localization/train/location.json"
-  valid_ann: "data/processed/localization/valid/location.json"
-  test_ann: "data/processed/localization/test/location.json"
+  train_ann: "data/processed/localization/train/location.csv"
+  valid_ann: "data/processed/localization/valid/location.csv"
+  test_ann: "data/processed/localization/test/location.csv"
   train_batch_size: 8
   valid_batch_size: 1
   test_batch_size: 1
