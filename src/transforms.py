@@ -3,8 +3,8 @@ from typing import Any, Tuple, Union
 
 import numpy as np
 import torch
+import torchvision.transforms.functional as F
 from PIL import Image
-from torchvision.transforms.functional import crop, hflip, resize, rotate
 
 
 class Crop(object):
@@ -40,7 +40,7 @@ class Crop(object):
             Sample to transform (image and localization's mark coordinates)
         """
         image, location = sample
-        image = crop(image, self.top, self.left, self.height, self.width)
+        image = F.crop(image, self.top, self.left, self.height, self.width)
         location = location - np.array([[self.left, self.top]])
         return image, location
 
@@ -76,7 +76,7 @@ class Resize(object):
 
         w, h = image.size
         new_h, new_w = self.output_size
-        image = resize(image, (new_h, new_w))
+        image = F.resize(image, (new_h, new_w))
         location = location * [new_w / w, new_h / h]
         return image, location
 
@@ -110,7 +110,7 @@ class RandomFlip(object):
         if point[0] < self.p:
             w, h = image.size
             location = (np.array([w, 0]) - location) * np.array([[1, -1]])
-            image = hflip(image)
+            image = F.hflip(image)
         return image, location
 
 
@@ -149,7 +149,7 @@ class RandomRotation(object):
             torch.rand(1).item() * (self.degrees[0] - self.degrees[1])
             + self.degrees[1]
         )
-        image = rotate(image, rotation)
+        image = F.rotate(image, rotation)
         rotation = rotation / 180 * np.pi
         rotation_matrix = np.array(
             [
@@ -178,7 +178,7 @@ class ColorChannel(object):
         assert 0 <= channel < 3
         self.channel = channel
 
-    def __call__(self, sample):
+    def __call__(self, sample: Tuple[Any, Any]):
         """
         Transformation logic
 
@@ -190,4 +190,44 @@ class ColorChannel(object):
         image, location = sample
         channels = image.split()
         image = Image.merge("L", (channels[self.channel],))
+        return image, location
+
+
+class GrayScale(object):
+    """
+    Class implements transformation of the image to grayscale
+    """
+
+    def __call__(self, sample: Tuple[Any, Any]):
+        """
+        Transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[Any, Any]
+            Sample to transform (image and localization's mark coordinates)
+        """
+        image, location = sample
+        image = image.convert("L")
+        return image, location
+
+
+class ToTensor(object):
+    """
+    Class implements transformation of the PIL image
+    to tensor
+    """
+
+    def __call__(self, sample: Tuple[Any, Any]):
+        """
+        Transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[Any, Any]
+            Sample to transform (image and localization's mark coordinates)
+        """
+        image, location = sample
+        image = F.to_tensor(image)
+        location = torch.from_numpy(location)
         return image, location
