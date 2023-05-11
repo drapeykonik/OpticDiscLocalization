@@ -3,6 +3,7 @@ from typing import Any, Tuple, Union
 
 import numpy as np
 import torch
+from PIL import Image
 from torchvision.transforms.functional import crop, hflip, resize, rotate
 
 
@@ -159,4 +160,34 @@ class RandomRotation(object):
         location = (
             location - np.array([[w / 2, h / 2]])
         ) @ rotation_matrix + np.array([[w / 2, h / 2]])
+        return image, location
+
+
+class ColorChannel(object):
+    """
+    Class implements color channel choosing transformation
+
+    Parameters
+    ----------
+    channel: int
+        Number of channel to choose. Must be equal 0, 1, 2
+    """
+
+    def __init__(self, channel: int):
+        assert isinstance(channel, int)
+        assert 0 <= channel < 3
+        self.channel = channel
+
+    def __call__(self, sample):
+        """
+        Transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[Any, Any]
+            Sample to transform (image and localization's mark coordinates)
+        """
+        image, location = sample
+        channels = image.split()
+        image = Image.merge("L", (channels[self.channel],))
         return image, location
