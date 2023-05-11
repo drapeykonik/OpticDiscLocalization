@@ -1,9 +1,9 @@
 """File contains classes for different transforms of the dataset images"""
-from typing import Any, Tuple
+from typing import Any, Tuple, Union
 
 import numpy as np
 import torch
-from torchvision.transforms.functional import crop, hflip, resize
+from torchvision.transforms.functional import crop, hflip, resize, rotate
 
 
 class Crop(object):
@@ -110,4 +110,53 @@ class RandomFlip(object):
             w, h = image.size
             location = (np.array([w, 0]) - location) * np.array([[1, -1]])
             image = hflip(image)
+        return image, location
+
+
+class RandomRotation(object):
+    """
+    Class implements random rotation of the image. Provides
+    image rotating and localization's mark coordinates modifying
+
+    Parameters
+    ----------
+    degrees: Union[float, Tuple[float, float]]
+        Rotation angle (degrees) range. If it's tuple, angle will be random number from this tuple range.
+        If it's number, angle will be random number from range [-degrees, degrees]
+    """
+
+    def __init__(self, degrees: Union[float, Tuple[float, float]]):
+        assert isinstance(degrees, (float, tuple))
+        if isinstance(degrees, float):
+            self.degrees = (-degrees, degrees)
+        else:
+            assert len(degrees) == 2
+            self.degrees = degrees
+
+    def __call__(self, sample: Tuple[Any, Any]):
+        """
+        Transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[Any, Any]
+            Sample to transform (image and localization's mark coordinates)
+        """
+        image, location = sample
+        w, h = image.size
+        rotation = (
+            torch.rand(1).item() * (self.degrees[0] - self.degrees[1])
+            + self.degrees[1]
+        )
+        image = rotate(image, rotation)
+        rotation = rotation / 180 * np.pi
+        rotation_matrix = np.array(
+            [
+                [np.cos(rotation), -np.sin(rotation)],
+                [np.sin(rotation), np.cos(rotation)],
+            ]
+        )
+        location = (
+            location - np.array([[w / 2, h / 2]])
+        ) @ rotation_matrix + np.array([[w / 2, h / 2]])
         return image, location
