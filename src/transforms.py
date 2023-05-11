@@ -30,13 +30,13 @@ class Crop(object):
         self.height = height
         self.width = width
 
-    def __call__(self, sample: Tuple[Any, Any]):
+    def __call__(self, sample: Tuple[Image.Image, np.array]):
         """
         Transformation logic
 
         Parameters
         ----------
-        sample: Tuple[Any, Any]
+        sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
         """
         image, location = sample
@@ -63,13 +63,13 @@ class Resize(object):
         else:
             self.output_size = (output_size, output_size)
 
-    def __call__(self, sample: Tuple[Any, Any]):
+    def __call__(self, sample: Tuple[Image.Image, np.array]):
         """
         Transformation logic
 
         Parameters
         ----------
-        sample: Tuple[Any, Any]
+        sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
         """
         image, location = sample
@@ -96,13 +96,13 @@ class RandomFlip(object):
         assert 0 <= p <= 1
         self.p = p
 
-    def __call__(self, sample: Tuple[Any, Any]):
+    def __call__(self, sample: Tuple[Image.Image, np.array]):
         """
         Transformation logic
 
         Parameters
         ----------
-        sample: Tuple[Any, Any]
+        sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
         """
         image, location = sample
@@ -134,13 +134,13 @@ class RandomRotation(object):
             assert len(degrees) == 2
             self.degrees = degrees
 
-    def __call__(self, sample: Tuple[Any, Any]):
+    def __call__(self, sample: Tuple[Image.Image, np.array]):
         """
         Transformation logic
 
         Parameters
         ----------
-        sample: Tuple[Any, Any]
+        sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
         """
         image, location = sample
@@ -178,13 +178,13 @@ class ColorChannel(object):
         assert 0 <= channel < 3
         self.channel = channel
 
-    def __call__(self, sample: Tuple[Any, Any]):
+    def __call__(self, sample: Tuple[Image.Image, np.array]):
         """
         Transformation logic
 
         Parameters
         ----------
-        sample: Tuple[Any, Any]
+        sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
         """
         image, location = sample
@@ -198,13 +198,13 @@ class GrayScale(object):
     Class implements transformation of the image to grayscale
     """
 
-    def __call__(self, sample: Tuple[Any, Any]):
+    def __call__(self, sample: Tuple[Image.Image, np.array]):
         """
         Transformation logic
 
         Parameters
         ----------
-        sample: Tuple[Any, Any]
+        sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
         """
         image, location = sample
@@ -215,10 +215,10 @@ class GrayScale(object):
 class ToTensor(object):
     """
     Class implements transformation of the PIL image
-    to tensor
+    to tensors
     """
 
-    def __call__(self, sample: Tuple[Any, Any]):
+    def __call__(self, sample: Tuple[Image.Image, np.array]):
         """
         Transformation logic
 
