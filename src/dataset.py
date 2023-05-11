@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from skimage import io
+from PIL import Image
 from torch.utils.data import Dataset
 
 
@@ -42,7 +42,7 @@ class FundusDataset(Dataset):
         image_path = os.path.join(
             self.data_root, self.ann_frame.iloc[index, 1]
         )
-        image = io.imread(image_path)
+        image = Image.open(image_path)
         location = self.ann_frame.iloc[index, 2:]
         location = np.array([location])
         location = location.astype("float").reshape(-1, 2)
