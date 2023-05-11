@@ -2,7 +2,8 @@
 from typing import Any, Tuple
 
 import numpy as np
-from torchvision.transforms.functional import crop, resize
+import torch
+from torchvision.transforms.functional import crop, hflip, resize
 
 
 class Crop(object):
@@ -29,6 +30,14 @@ class Crop(object):
         self.width = width
 
     def __call__(self, sample: Tuple[Any, Any]):
+        """
+        Transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[Any, Any]
+            Sample to transform (image and localization's mark coordinates)
+        """
         image, location = sample
         image = crop(image, self.top, self.left, self.height, self.width)
         location = location - np.array([[self.left, self.top]])
@@ -53,11 +62,52 @@ class Resize(object):
         else:
             self.output_size = (output_size, output_size)
 
-    def __call__(self, sample):
+    def __call__(self, sample: Tuple[Any, Any]):
+        """
+        Transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[Any, Any]
+            Sample to transform (image and localization's mark coordinates)
+        """
         image, location = sample
 
         w, h = image.size
         new_h, new_w = self.output_size
         image = resize(image, (new_h, new_w))
         location = location * [new_w / w, new_h / h]
+        return image, location
+
+
+class RandomFlip(object):
+    """
+    Class implements random horizontal flip transformation of the image.
+    Provides image flipping and localization's mark coordinates modifying
+
+    Parameters
+    ----------
+    p: float
+        Probability of flipping
+    """
+
+    def __init__(self, p: float):
+        assert 0 <= p <= 1
+        self.p = p
+
+    def __call__(self, sample: Tuple[Any, Any]):
+        """
+        Transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[Any, Any]
+            Sample to transform (image and localization's mark coordinates)
+        """
+        image, location = sample
+        point = torch.randint(high=1, size=(1,))
+        if point[0] < self.p:
+            w, h = image.size
+            location = (np.array([w, 0]) - location) * np.array([[1, -1]])
+            image = hflip(image)
         return image, location
