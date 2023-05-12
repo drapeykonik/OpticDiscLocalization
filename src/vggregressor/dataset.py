@@ -38,7 +38,7 @@ class FundusDataset(Dataset):
     def __len__(self) -> int:
         return self.ann_frame.shape[0]
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+    def __getitem__(self, index: int) -> Tuple[Image.Image, np.array]:
         image_path = os.path.join(
             self.data_root, self.ann_frame.iloc[index, 1]
         )

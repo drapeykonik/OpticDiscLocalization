@@ -11,15 +11,15 @@ activate:
 	@echo "Activating virtual environment"
 	poetry shell
 
-download_data: src/download.py
+download_data: src/data/download.py
 	@echo "Downloading data..."
-	poetry run python src/download.py
+	poetry run python src/data/download.py
 
 setup: initialize_git install download_data
 
-process_data: data/raw/localization src/process.py
+process_data: data/raw/localization src/data/process.py
 	@echo "Processing data..."
-	poetry run python src/process.py
+	poetry run python src/data/process.py
 
-data/processed/localization: data/raw/localization src/process.py
-	poetry run python src/process.py
+data/processed/localization: data/raw/localization src/data/process.py
+	poetry run python src/data/process.py
