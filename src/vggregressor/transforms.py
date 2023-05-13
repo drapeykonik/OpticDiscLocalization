@@ -24,13 +24,15 @@ class Crop(object):
         Width of the cropping rectangle
     """
 
-    def __init__(self, top: int, left: int, height: int, width: int):
+    def __init__(self, top: int, left: int, height: int, width: int) -> None:
         self.top = top
         self.left = left
         self.height = height
         self.width = width
 
-    def __call__(self, sample: Tuple[Image.Image, np.array]):
+    def __call__(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
         """
         Transformation logic
 
@@ -56,14 +58,16 @@ class Resize(object):
         Output size of the image
     """
 
-    def __init__(self, output_size):
+    def __init__(self, output_size: Union[int, tuple]) -> None:
         assert isinstance(output_size, (int, tuple))
         if isinstance(output_size, tuple):
             self.output_size = output_size
         else:
             self.output_size = (output_size, output_size)
 
-    def __call__(self, sample: Tuple[Image.Image, np.array]):
+    def __call__(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
         """
         Transformation logic
 
@@ -92,11 +96,13 @@ class RandomFlip(object):
         Probability of flipping
     """
 
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         assert 0 <= p <= 1
         self.p = p
 
-    def __call__(self, sample: Tuple[Image.Image, np.array]):
+    def __call__(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
         """
         Transformation logic
 
@@ -126,7 +132,7 @@ class RandomRotation(object):
         If it's number, angle will be random number from range [-degrees, degrees]
     """
 
-    def __init__(self, degrees: Union[float, Tuple[float, float]]):
+    def __init__(self, degrees: Union[float, Tuple[float, float]]) -> None:
         assert isinstance(degrees, (float, tuple))
         if isinstance(degrees, float):
             self.degrees = (-degrees, degrees)
@@ -134,7 +140,9 @@ class RandomRotation(object):
             assert len(degrees) == 2
             self.degrees = degrees
 
-    def __call__(self, sample: Tuple[Image.Image, np.array]):
+    def __call__(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
         """
         Transformation logic
 
@@ -173,12 +181,14 @@ class ColorChannel(object):
         Number of channel to choose. Must be equal 0, 1, 2
     """
 
-    def __init__(self, channel: int):
+    def __init__(self, channel: int) -> None:
         assert isinstance(channel, int)
         assert 0 <= channel < 3
         self.channel = channel
 
-    def __call__(self, sample: Tuple[Image.Image, np.array]):
+    def __call__(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
         """
         Transformation logic
 
@@ -198,7 +208,9 @@ class GrayScale(object):
     Class implements transformation of the image to grayscale
     """
 
-    def __call__(self, sample: Tuple[Image.Image, np.array]):
+    def __call__(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
         """
         Transformation logic
 
@@ -218,7 +230,9 @@ class ToTensor(object):
     to tensors
     """
 
-    def __call__(self, sample: Tuple[Image.Image, np.array]):
+    def __call__(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
         """
         Transformation logic
 
