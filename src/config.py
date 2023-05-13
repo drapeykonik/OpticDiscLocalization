@@ -6,6 +6,22 @@ from pydantic import BaseModel
 from yaml import safe_load
 
 
+class PipelineConfig(BaseModel):
+    """
+    Class for defining pipeline config
+
+    Parameters
+    ----------
+    device: str
+        Device name
+    epochs: int
+        Epochs number for training
+    """
+
+    device: str
+    epochs: int
+
+
 class DatasetConfig(BaseModel):
     """
     Class for defining dataset config
@@ -82,19 +98,6 @@ class TransformationsConfig(BaseModel):
     train: List[TransformConfig]
     valid: List[TransformConfig]
     test: List[TransformConfig]
-
-
-class DeviceConfig(BaseModel):
-    """
-    Class for defining device config
-
-    Parameters
-    ----------
-    name: str
-        Device name
-    """
-
-    name: str
 
 
 class ModelConfig(BaseModel):
@@ -197,9 +200,9 @@ class Config(BaseModel):
         Config part for logger
     """
 
+    pipeline: PipelineConfig
     data: DatasetConfig
     transforms: TransformationsConfig
-    device: DeviceConfig
     model: ModelConfig
     loss: LossConfig
     optimizer: OptimizerConfig
