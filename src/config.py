@@ -28,38 +28,36 @@ class DatasetConfig(BaseModel):
 
     Parameters
     ----------
-    data_root: str
-        Path to the data folder
-    train: str
-        Path to the training data
-    valid: str
-        Path to the validating data
-    test: str
-        Path to the testing data
-    train_ann: str
-        Path to the annotation file for the training data
-    valid_ann: str
-        Path to the annotation file for the validating data
-    test_ann: str
-        Path to the annotation file for the testing data
-    train_batch: int
-        Size of the mini-batch for the training dataset (dataloader)
-    valid_batch: int
-        Size of the mini-batch for the validating dataset (dataloader)
-    test_batch: int
-        Size of the mini-batch for the testing dataset (dataloader)
+    path: str
+        Path to the data
+    annotations: str
+        Name of the annotation file
+    batch_size:
+        Number of samples in the mini-batch
     """
 
-    data_root: str = "data/processed/localization"
-    train: str = "data/processed/localization/train"
-    valid: str = "data/processed/localization/valid"
-    test: str = "data/processed/localization/test"
-    train_ann: str = "data/processed/localization/train/location.json"
-    valid_ann: str = "data/processed/localization/valid/location.json"
-    test_ann: str = "data/processed/localization/test/location.json"
-    train_batch: int = 8
-    valid_batch: int = 1
-    test_batch: int = 1
+    path: str
+    annotations: str
+    batch_size: int
+
+
+class DataConfig(BaseModel):
+    """
+    Class for defining data config
+
+    Parameters
+    ----------
+    train: DatasetConfig
+        Training dataset config
+    valid: DatasetConfig
+        Validation dataset config
+    test: DatasetConfig
+        Testing dataset config
+    """
+
+    train: DatasetConfig
+    valid: DatasetConfig
+    test: DatasetConfig
 
 
 class TransformConfig(BaseModel):
@@ -111,6 +109,7 @@ class ModelConfig(BaseModel):
     """
 
     name: str
+    params: Dict
 
 
 class LossConfig(BaseModel):
@@ -184,8 +183,8 @@ class Config(BaseModel):
 
     Parameters
     ----------
-    data: DatasetConfig
-        Config part for dataset
+    data: DataConfig
+        Config part for data
     transforms: TransformationsConfig
         Config part for transformations
     model: ModelConfig
@@ -201,7 +200,7 @@ class Config(BaseModel):
     """
 
     pipeline: PipelineConfig
-    data: DatasetConfig
+    data: DataConfig
     transforms: TransformationsConfig
     model: ModelConfig
     loss: LossConfig
