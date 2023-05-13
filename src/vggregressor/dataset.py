@@ -36,9 +36,30 @@ class FundusDataset(Dataset):
         )
 
     def __len__(self) -> int:
+        """
+        Getting length of the dataset (amount of samples)
+
+        Returns
+        -------
+        length: int
+            Length of the dataset
+        """
         return self.ann_frame.shape[0]
 
     def __getitem__(self, index: int) -> Tuple[Image.Image, np.array]:
+        """
+        Getting dataset sample
+
+        Parameters
+        ----------
+        index: int
+            Index of the sample
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Sample from dataset (image and localization mark coordinates)
+        """
         image_path = os.path.join(
             self.data_root, self.ann_frame.iloc[index, 1]
         )

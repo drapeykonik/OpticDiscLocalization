@@ -27,6 +27,10 @@ class ProgressBar:
             Size of the one block
         total_size : int
             Total size of the downloaded file
+
+        Returns
+        -------
+        None
         """
         if not self.pbar:
             self.pbar = progressbar.ProgressBar(maxval=total_size)
@@ -54,6 +58,10 @@ NEW_TEST_PATH = os.path.join("data", "raw", "localization", "test")
 def download() -> None:
     """
     Download IDRID dataset for localization task.
+
+    Returns
+    -------
+    None
     """
     os.makedirs(DATASET_PATH, exist_ok=True)
     zip_path = os.path.join(DATASET_PATH, "localization.zip")

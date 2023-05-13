@@ -217,6 +217,11 @@ class Config(BaseModel):
         ----------
         path: str
             Path to yaml config file
+
+        Returns
+        -------
+        config: Config
+            Parsed config
         """
         with open(path, "r") as yaml_cfg:
             cfg = cls.parse_raw(json.dumps(safe_load(yaml_cfg)))

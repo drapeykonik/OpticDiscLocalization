@@ -206,6 +206,11 @@ class VGGRegressor(nn.Module):
         ----------
         x: torch.Tensor
             Batch of the images for location prediction
+
+        Returns
+        -------
+        location: torch.Tensor
+            Predicted localization mark coordinates
         """
 
         x = self.pool0(self.conv0(x))

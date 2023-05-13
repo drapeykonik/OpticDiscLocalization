@@ -56,6 +56,11 @@ class Pipeline:
         ----------
         model_config: ModelConfig
             Model config part
+
+        Returns
+        -------
+        model: nn.Module
+            Created model
         """
         exec("from src.vggregressor.model import " + model_config.name)
         return eval(model_config.name + "(**model_config.params)")
@@ -72,6 +77,11 @@ class Pipeline:
         ----------
         transform_configs: List[TransformConfig]
             List of the transform configs
+
+        Returns
+        -------
+        transform: Callable
+            Created transform pipeline
         """
         transforms = []
         for t in transform_configs:
@@ -92,6 +102,11 @@ class Pipeline:
             Dataset config
         transform_configs: List[TransformConfig]
             List of the transform configs
+
+        Returns
+        -------
+        dataset: FundusDataset
+            Created dataset
         """
         return FundusDataset(
             data_root=dataset_config.path,
@@ -113,6 +128,11 @@ class Pipeline:
             Data config
         transforms_config: TransformationsConfig
             Transformations config
+
+        Returns
+        -------
+        data_loaders: Dict[str, torch.utils.data.DataLoader]
+            Dictionary of the data loaders for every dataset
         """
         data_loaders = dict()
         for dataset_name, dataset_config in data_config.dict().items():
@@ -135,6 +155,11 @@ class Pipeline:
         ----------
         loss_config: LossConfig
             Config for loss function
+
+        Returns
+        -------
+        loss: Callable
+            Created loss function
         """
         exec("from torch.nn import " + loss_config.type)
         return eval(loss_config.type + "(**loss_config.params)")
@@ -153,6 +178,11 @@ class Pipeline:
             Optimzier config
         model: nn.Module
             Model to optimize
+
+        Returns
+        -------
+        optimizer: torch.optim.Optimizer
+            Created optimizer
         """
         exec("from torch.optim import " + optimizer_config.type)
         return eval(
@@ -175,6 +205,11 @@ class Pipeline:
             Learning rate scheduler config
         optimizer: torch.optim.Optimizer
             Optimizer to schedule learning rate
+
+        Returns
+        -------
+        scheduler: torch.optim.lr_scheduler.LRScheduler
+            Created learning rate scheduler
         """
         exec("from torch.optim.lr_scheduler import " + scheduler_config.type)
         return eval(
@@ -184,6 +219,11 @@ class Pipeline:
     def __train_epoch(self) -> List[float]:
         """
         Method to perform one epoch of training
+
+        Returns
+        -------
+        losses: List[float]
+            Losses after training epoch
         """
         train_losses_epoch = []
 
@@ -202,6 +242,11 @@ class Pipeline:
     def __valid_epoch(self) -> List[float]:
         """
         Method to perform one epoch of validation
+
+        Returns
+        -------
+        losses: List[float]
+            Losses after validation epoch
         """
         valid_losses_epoch = []
 
@@ -219,6 +264,11 @@ class Pipeline:
     def fit(self) -> Tuple[List[float], List[float]]:
         """
         Method to perform full cycle of the training/validation of the model
+
+        Returns
+        -------
+        losses: Tuple[List[float], List[float]]
+            Losses after training/validation cycle from each epoch
         """
         train_losses, valid_losses = [], []
         torch.cuda.empty_cache()

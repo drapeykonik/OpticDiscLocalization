@@ -40,6 +40,11 @@ class Crop(object):
         ----------
         sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (cropped image and modified coordinates)
         """
         image, location = sample
         image = F.crop(image, self.top, self.left, self.height, self.width)
@@ -75,6 +80,11 @@ class Resize(object):
         ----------
         sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (resized image and modified coordinates)
         """
         image, location = sample
 
@@ -110,6 +120,11 @@ class RandomFlip(object):
         ----------
         sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (flipped image and modified coordinates)
         """
         image, location = sample
         point = torch.randint(high=1, size=(1,))
@@ -150,6 +165,11 @@ class RandomRotation(object):
         ----------
         sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (rotated image and modified coordinates)
         """
         image, location = sample
         w, h = image.size
@@ -196,6 +216,12 @@ class ColorChannel(object):
         ----------
         sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (image built using chosen color channel
+            and modified coordinates)
         """
         image, location = sample
         channels = image.split()
@@ -218,6 +244,11 @@ class GrayScale(object):
         ----------
         sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (grayscale image and modified coordinates)
         """
         image, location = sample
         image = image.convert("L")
@@ -240,6 +271,11 @@ class ToTensor(object):
         ----------
         sample: Tuple[Any, Any]
             Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (torch.Tensor image and torch.Tensor coordinates)
         """
         image, location = sample
         image = F.to_tensor(image)

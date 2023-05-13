@@ -20,6 +20,11 @@ def clean_labels(labels: pd.DataFrame) -> pd.DataFrame:
     ----------
     labels: pandas.DataFrame
         pandas.DataFrame with images names and their location labels
+
+    Returns
+    -------
+    labels: pandas.DataFrame
+        Cleaned labels
     """
 
     labels = labels.dropna(axis=0, subset=labels.columns[:3]).dropna(axis=1)
@@ -42,6 +47,10 @@ def copy_images(
         Source directory path
     dest: os.PathLike
         Destination directory path
+
+    Returns
+    -------
+    None
     """
 
     images_names.apply(
@@ -61,6 +70,10 @@ def build_data_dir(labels: pd.DataFrame, src_dir: str, dest_dir: str) -> None:
         Source directory name
     dest_dir: str
         Destination directory name
+
+    Returns
+    -------
+    None
     """
 
     os.makedirs(
@@ -88,6 +101,10 @@ def process_data(valid_size: float = 0.2) -> None:
     valid_size: float
         Fraction of data for splitting training data
         on training set and validation data
+
+    Returns
+    -------
+    None
     """
     if not os.path.exists(PROCESSED_DATASET_DIRECTORY):
         os.makedirs(PROCESSED_DATASET_DIRECTORY, exist_ok=True)
