@@ -18,24 +18,33 @@ transforms:
   train:
     - transform: "Crop"
       params:
-        size: [[288, 0], [4000, 2848]]
+        top: 288
+        left: 0
+        height: 2000
+        width: 3200
     - transform: "Resize"
       params:
-        size: [512, 512]
+        output_size: [512, 512]
   valid:
     - transform: "Crop"
       params:
-        size: [[288, 0], [4000, 2848]]
+        top: 288
+        left: 0
+        height: 2000
+        width: 3200
     - transform: "Resize"
       params:
-        size: [512, 512]
+        output_size: [512, 512]
   test:
     - transform: "Crop"
       params:
-        size: [[288, 0], [4000, 2848]]
+        top: 288
+        left: 0
+        height: 2000
+        width: 3200
     - transform: "Resize"
       params:
-        size: [512, 512]
+        output_size: [512, 512]
 
 device:
   name: "cuda"
