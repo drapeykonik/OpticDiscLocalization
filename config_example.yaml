@@ -1,3 +1,7 @@
+pipeline:
+  device: "cuda"
+  epochs: 25
+
 data:
   dataset_root: "data/processed/localization"
   train_dataset: "data/processed/localization/train"
@@ -38,6 +42,8 @@ device:
 
 model: 
   name: "VGGRegressor"
+  params:
+    in_channels: 3
 
 loss: 
   type: "MSE"
