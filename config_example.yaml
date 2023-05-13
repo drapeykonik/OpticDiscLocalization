@@ -33,6 +33,9 @@ transforms:
       params:
         size: [512, 512]
 
+device:
+  name: "cuda"
+
 model: 
   name: "VGGRegressor"
 

@@ -84,6 +84,19 @@ class TransformationsConfig(BaseModel):
     test: List[TransformConfig]
 
 
+class DeviceConfig(BaseModel):
+    """
+    Class for defining device config
+
+    Parameters
+    ----------
+    name: str
+        Device name
+    """
+
+    name: str
+
+
 class ModelConfig(BaseModel):
     """
     Class for defining model config
@@ -186,6 +199,7 @@ class Config(BaseModel):
 
     data: DatasetConfig
     transforms: TransformationsConfig
+    device: DeviceConfig
     model: ModelConfig
     loss: LossConfig
     optimizer: OptimizerConfig
