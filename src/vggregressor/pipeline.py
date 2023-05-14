@@ -7,12 +7,12 @@ from torch.utils.data import DataLoader
 from torchvision import transforms as tfs
 from tqdm import tqdm
 
-from src.exp_runner.config import (Config, DataConfig, DatasetConfig,
-                                   LearningRateSchedulerConfig, LoggerConfig,
-                                   LossConfig, ModelConfig, OptimizerConfig,
-                                   PipelineConfig, TransformationsConfig,
-                                   TransformConfig)
-from src.vggregressor.dataset import FundusDataset
+from exp_runner.config import (Config, DataConfig, DatasetConfig,
+                               LearningRateSchedulerConfig, LoggerConfig,
+                               LossConfig, ModelConfig, OptimizerConfig,
+                               PipelineConfig, TransformationsConfig,
+                               TransformConfig)
+from vggregressor.dataset import FundusDataset
 
 
 class Pipeline:
@@ -63,7 +63,7 @@ class Pipeline:
         model: nn.Module
             Created model
         """
-        exec("from src.vggregressor.model import " + model_config.name)
+        exec("from vggregressor.model import " + model_config.name)
         return (
             eval(model_config.name + "(**model_config.params)")
             if model_config.params is not None
@@ -90,7 +90,7 @@ class Pipeline:
         """
         transforms = []
         for t in transform_configs:
-            exec("from src.vggregressor.transforms import " + t.transform)
+            exec("from vggregressor.transforms import " + t.transform)
             transforms.append(
                 (
                     eval(t.transform + "(**t.params)")
