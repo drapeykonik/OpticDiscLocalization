@@ -34,15 +34,15 @@ class Pipeline:
 
         self.device = config.pipeline.device
         self.epochs = config.pipeline.epochs
-        self.model = Pipeline._create_model(config.model).to(self.device)
-        self.data_loaders = Pipeline._create_data_loaders(
+        self.model = Pipeline.__create_model(config.model).to(self.device)
+        self.data_loaders = Pipeline.__create_data_loaders(
             config.data, config.transforms
         )
-        self.loss = Pipeline._create_loss(config.loss)
-        self.optimizer = Pipeline._create_optimizer(
+        self.loss = Pipeline.__create_loss(config.loss)
+        self.optimizer = Pipeline.__create_optimizer(
             config.optimizer, self.model
         )
-        self.scheduler = Pipeline._create_scheduler(
+        self.scheduler = Pipeline.__create_scheduler(
             config.lr_scheduler, self.optimizer
         )
         self.logger = None
