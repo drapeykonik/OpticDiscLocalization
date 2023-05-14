@@ -7,10 +7,11 @@ from torch.utils.data import DataLoader
 from torchvision import transforms as tfs
 from tqdm import tqdm
 
-from src.config import (Config, DataConfig, DatasetConfig,
-                        LearningRateSchedulerConfig, LoggerConfig, LossConfig,
-                        ModelConfig, OptimizerConfig, PipelineConfig,
-                        TransformationsConfig, TransformConfig)
+from src.exp_runner.config import (Config, DataConfig, DatasetConfig,
+                                   LearningRateSchedulerConfig, LoggerConfig,
+                                   LossConfig, ModelConfig, OptimizerConfig,
+                                   PipelineConfig, TransformationsConfig,
+                                   TransformConfig)
 from src.vggregressor.dataset import FundusDataset
 
 
