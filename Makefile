@@ -23,3 +23,6 @@ process_data: data/raw/localization src/data/process.py
 
 data/processed/localization: data/raw/localization src/data/process.py
 	poetry run python src/data/process.py
+
+run: data/processed/localization
+	poetry run python src/run.py ${model} ${experiment}
