@@ -65,11 +65,9 @@ class FundusDataset(Dataset):
         )
         image = Image.open(image_path)
         location = self.ann_frame.iloc[index, 2:]
-        location = np.array([location])
-        location = location.astype("float").reshape(-1, 2)
+        location = np.array(location).astype("float").reshape(-1)
         sample = (image, location)
 
         if self.transform:
             sample = self.transform(sample)
-
         return sample
