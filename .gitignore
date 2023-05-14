@@ -90,7 +90,11 @@ target/
 # pytest cache
 .pytest_cache/
 
+#poetry
+poetry.lock
+
 # Data and models
 data/*/*
 models/*
 !.gitkeep
+experiments/
