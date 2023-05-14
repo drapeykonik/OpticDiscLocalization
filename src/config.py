@@ -1,6 +1,6 @@
 """File for experiment config defining"""
 import json
-from typing import Dict, List, Type, TypeVar
+from typing import Dict, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
 from yaml import safe_load
@@ -75,7 +75,7 @@ class TransformConfig(BaseModel):
     """
 
     transform: str
-    params: Dict
+    params: Optional[Dict]
 
 
 class TransformationsConfig(BaseModel):
@@ -109,7 +109,7 @@ class ModelConfig(BaseModel):
     """
 
     name: str
-    params: Dict
+    params: Optional[Dict]
 
 
 class LossConfig(BaseModel):
@@ -125,7 +125,7 @@ class LossConfig(BaseModel):
     """
 
     type: str
-    params: Dict
+    params: Optional[Dict]
 
 
 class OptimizerConfig(BaseModel):
@@ -142,7 +142,7 @@ class OptimizerConfig(BaseModel):
     """
 
     type: str
-    params: Dict
+    params: Optional[Dict]
 
 
 class LearningRateSchedulerConfig(BaseModel):
@@ -158,7 +158,7 @@ class LearningRateSchedulerConfig(BaseModel):
     """
 
     type: str
-    params: Dict
+    params: Optional[Dict]
 
 
 class LoggerConfig(BaseModel):

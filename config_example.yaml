@@ -1,12 +1,12 @@
 pipeline:
   device: "cuda"
-  epochs: 25
+  epochs: 5
 
 data:
   train:
     path: "../data/processed/localization/train"
     annotations: "location.csv"
-    batch_size: 8
+    batch_size: 4
   valid:
     path: "../data/processed/localization/valid"
     annotations: "location.csv"
@@ -27,6 +27,7 @@ transforms:
     - transform: "Resize"
       params:
         output_size: 512
+    - transform: "ToTensor"
   valid:
     - transform: "Crop"
       params:
@@ -37,6 +38,7 @@ transforms:
     - transform: "Resize"
       params:
         output_size: 512
+    - transform: "ToTensor"
   test:
     - transform: "Crop"
       params:
@@ -47,7 +49,7 @@ transforms:
     - transform: "Resize"
       params:
         output_size: 512
-
+    - transform: "ToTensor"
 model: 
   name: "VGGRegressor"
   params:

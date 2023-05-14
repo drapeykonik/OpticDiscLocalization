@@ -38,7 +38,7 @@ class Pipeline:
         self.data_loaders = Pipeline.__create_data_loaders(
             config.data, config.transforms
         )
-        self.loss = Pipeline.__create_loss(config.loss)
+        self.criterion = Pipeline.__create_loss(config.loss)
         self.optimizer = Pipeline.__create_optimizer(
             config.optimizer, self.model
         )
@@ -63,7 +63,11 @@ class Pipeline:
             Created model
         """
         exec("from src.vggregressor.model import " + model_config.name)
-        return eval(model_config.name + "(**model_config.params)")
+        return (
+            eval(model_config.name + "(**model_config.params)")
+            if model_config.params is not None
+            else eval(model_config.name + "()")
+        )
 
     @staticmethod
     def __create_transform(
@@ -86,7 +90,13 @@ class Pipeline:
         transforms = []
         for t in transform_configs:
             exec("from src.vggregressor.transforms import " + t.transform)
-            transforms.append(eval(t.transform + "(**t.params)"))
+            transforms.append(
+                (
+                    eval(t.transform + "(**t.params)")
+                    if t.params is not None
+                    else eval(t.transform + "()")
+                )
+            )
         return tfs.Compose(transforms)
 
     @staticmethod
@@ -162,7 +172,11 @@ class Pipeline:
             Created loss function
         """
         exec("from torch.nn import " + loss_config.type)
-        return eval(loss_config.type + "(**loss_config.params)")
+        return (
+            eval(loss_config.type + "(**loss_config.params)")
+            if loss_config.params is not None
+            else eval(loss_config.type + "()")
+        )
 
     @staticmethod
     def __create_optimizer(
@@ -185,9 +199,13 @@ class Pipeline:
             Created optimizer
         """
         exec("from torch.optim import " + optimizer_config.type)
-        return eval(
-            optimizer_config.type
-            + "(model.parameters(), **optimizer_config.params)"
+        return (
+            eval(
+                optimizer_config.type
+                + "(model.parameters(), **optimizer_config.params)"
+            )
+            if optimizer_config.params is not None
+            else eval(optimizer_config.type + "()")
         )
 
     @staticmethod
@@ -212,8 +230,13 @@ class Pipeline:
             Created learning rate scheduler
         """
         exec("from torch.optim.lr_scheduler import " + scheduler_config.type)
-        return eval(
-            scheduler_config.type + "(optimizer, **scheduler_config.params)"
+        return (
+            eval(
+                scheduler_config.type
+                + "(optimizer, **scheduler_config.params)"
+            )
+            if scheduler_config.params is not None
+            else eval(scheduler_config.type + "()")
         )
 
     def __train_epoch(self) -> List[float]:
@@ -228,7 +251,7 @@ class Pipeline:
         train_losses_epoch = []
 
         self.model.train()
-        for (images, locations) in tqdm(self.data_loaders["train"]):
+        for images, locations in tqdm(self.data_loaders["train"]):
             self.optimizer.zero_grad()
             pred_locations = self.model(images.to(self.device))
             loss = self.criterion(locations.to(self.device), pred_locations)
@@ -280,8 +303,8 @@ class Pipeline:
                                          Valid loss: {round(valid_losses[-1], 4)}"""
                 )
 
-            train_losses_epoch = self.train_epoch()
-            valid_losses_epoch = self.valid_epoch()
+            train_losses_epoch = self.__train_epoch()
+            valid_losses_epoch = self.__valid_epoch()
 
             train_losses.append(np.mean(train_losses_epoch))
             valid_losses.append(np.mean(valid_losses_epoch))
