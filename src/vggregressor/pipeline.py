@@ -111,7 +111,7 @@ class Pipeline:
         return FundusDataset(
             data_root=dataset_config.path,
             ann_file=dataset_config.annotations,
-            transform=Pipeline._create_transform(transform_configs),
+            transform=Pipeline.__create_transform(transform_configs),
         )
 
     @staticmethod
@@ -137,7 +137,7 @@ class Pipeline:
         data_loaders = dict()
         for dataset_name, dataset_config in data_config.dict().items():
             data_loaders[dataset_name] = DataLoader(
-                Pipeline._create_dataset(
+                Pipeline.__create_dataset(
                     DatasetConfig.parse_obj(dataset_config),
                     getattr(transforms_config, dataset_name),
                 ),
