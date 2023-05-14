@@ -230,10 +230,8 @@ class Pipeline:
         self.model.train()
         for (images, locations) in tqdm(self.data_loaders["train"]):
             self.optimizer.zero_grad()
-            pred_locations = self.model(images.to(self.device).float())
-            loss = self.criterion(
-                locations.to(self.device).float(), pred_locations
-            )
+            pred_locations = self.model(images.to(self.device))
+            loss = self.criterion(locations.to(self.device), pred_locations)
             train_losses_epoch.append(loss.item())
             loss.backward()
             self.optimizer.step()
@@ -253,9 +251,9 @@ class Pipeline:
         self.model.eval()
         with torch.no_grad():
             for images, locations in self.data_loaders["valid"]:
-                pred_locations = self.model(images.to(self.device).float())
+                pred_locations = self.model(images.to(self.device))
                 loss = self.criterion(
-                    locations.to(self.device).float(), pred_locations
+                    locations.to(self.device), pred_locations
                 )
                 valid_losses_epoch.append(loss.item())
 

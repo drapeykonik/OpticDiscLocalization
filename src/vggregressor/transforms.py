@@ -278,6 +278,6 @@ class ToTensor(object):
             Transformed sample (torch.Tensor image and torch.Tensor coordinates)
         """
         image, location = sample
-        image = F.to_tensor(image)
-        location = torch.from_numpy(location)
+        image = F.to_tensor(image).to(torch.Tensor.float)
+        location = torch.from_numpy(location).to(torch.Tensor.float)
         return image, location
