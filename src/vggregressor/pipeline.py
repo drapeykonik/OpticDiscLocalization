@@ -358,6 +358,31 @@ class Pipeline:
         location = self.model(image.view((-1, *image.shape)).to(self.device))
         return tfs_image, location
 
+    def inverse_transform(
+        self, target: str, sample: Tuple[torch.Tensor, torch.Tensor]
+    ) -> Tuple[Image.Image, np.array]:
+        """
+        Method to inverse transformation for sample
+        of the specified transfromations part (target)
+
+        Parameters
+        ----------
+        targer: str
+            Name of the transformation part
+        sample: Tuple[torch.Tensor, torch.Tensor]
+            Sample to transform
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Inverse transformed sample
+        """
+        for tfs in reversed(
+            self.data_loaders[target].dataset.transform.transforms
+        ):
+            sample = tfs.inverse(sample)
+        return sample
+
     def save_model(self, path: os.PathLike) -> None:
         """
         Method to save model by path

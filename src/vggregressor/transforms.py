@@ -47,9 +47,34 @@ class Crop(object):
             Transformed sample (cropped image and modified coordinates)
         """
         image, location = sample
+        self.w_, self.h_ = image.size
         image = F.crop(image, self.top, self.left, self.height, self.width)
         location = location - np.array([[self.left, self.top]])
         return image, location
+
+    def inverse(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
+        """
+        Inverse transformation logic
+        Creates a bigger image adding black background. This
+        transformation provides image expanding and localization's mark modifying
+
+        Parameters
+        ----------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (resized image and modified coordinates)
+        """
+        image, location = sample
+        background = Image.new("RGB", (self.w_, self.h_), (0, 0, 0))
+        background.paste(image, (self.left, self.top))
+        location = location + np.array([self.left, self.top])
+        return background, location
 
 
 class Resize(object):
@@ -88,10 +113,35 @@ class Resize(object):
         """
         image, location = sample
 
-        w, h = image.size
+        self.w_, self.h_ = image.size
         new_h, new_w = self.output_size
         image = F.resize(image, (new_h, new_w))
-        location = location * [new_w / w, new_h / h]
+        location = location * [new_w / self.w_, new_h / self.h_]
+        return image, location
+
+    def inverse(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
+        """
+        Inverse transformation logic
+        Creates a bigger image by resizing to source size. This
+        transformation provides image resizing and localization's
+        mark modifying
+
+        Parameters
+        ----------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Sample to transform (image and localization's mark coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (resized image and modified coordinates)
+        """
+        image, location = sample
+        old_w, old_h = image.size
+        image = F.resize(image, (self.h_, self.w_))
+        location = location * [self.w_ / old_w, self.h_ / old_h]
         return image, location
 
 
