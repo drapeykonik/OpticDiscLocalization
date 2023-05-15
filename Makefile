@@ -5,6 +5,11 @@ initialize_git:
 install: 
 	@echo "Installing..."
 	poetry install
+	poetry run mim install mmengine
+	poetry run mim install "mmcv>=2.0.0"
+	cd src/ssd/mmdetection
+	poetry run pip install -v -e .
+	cd ../../..
 	poetry run pre-commit install
 
 activate:
