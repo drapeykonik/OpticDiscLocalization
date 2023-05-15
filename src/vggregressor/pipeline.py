@@ -6,6 +6,7 @@ import torch
 from PIL import Image
 from torch import nn
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms as tfs
 from tqdm import tqdm
 
@@ -30,10 +31,13 @@ class Pipeline:
     ----------
     config: Config
         Config for full pipeline
+    log_dir: os.PathLike
+        Directory for logs
     """
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config, log_dir: os.PathLike) -> None:
         self.config = config
+        self.logger = SummaryWriter(os.path.join("experiments", log_dir))
 
         self.device = config.pipeline.device
         self.epochs = config.pipeline.epochs
@@ -242,7 +246,7 @@ class Pipeline:
             else eval(scheduler_config.type + "()")
         )
 
-    def __train_epoch(self) -> List[float]:
+    def __train_epoch(self, epoch: int) -> List[float]:
         """
         Method to perform one epoch of training
 
@@ -254,16 +258,21 @@ class Pipeline:
         train_losses_epoch = []
 
         self.model.train()
-        for images, locations in tqdm(self.data_loaders["train"]):
+        for i, (images, locations) in enumerate(self.data_loaders["train"]):
             self.optimizer.zero_grad()
             pred_locations = self.model(images.to(self.device))
             loss = self.criterion(locations.to(self.device), pred_locations)
             train_losses_epoch.append(loss.item())
+            self.logger.add_scalar(
+                "Train loss",
+                loss.item(),
+                epoch * len(self.data_loaders["train"]) + i,
+            )
             loss.backward()
             self.optimizer.step()
         return train_losses_epoch
 
-    def __valid_epoch(self) -> List[float]:
+    def __valid_epoch(self, epoch: int) -> List[float]:
         """
         Method to perform one epoch of validation
 
@@ -276,12 +285,19 @@ class Pipeline:
 
         self.model.eval()
         with torch.no_grad():
-            for images, locations in self.data_loaders["valid"]:
+            for i, (images, locations) in enumerate(
+                self.data_loaders["valid"]
+            ):
                 pred_locations = self.model(images.to(self.device))
                 loss = self.criterion(
                     locations.to(self.device), pred_locations
                 )
                 valid_losses_epoch.append(loss.item())
+                self.logger.add_scalar(
+                    "Valid loss",
+                    loss.item(),
+                    epoch * len(self.data_loaders["valid"] + i),
+                )
 
         return valid_losses_epoch
 
