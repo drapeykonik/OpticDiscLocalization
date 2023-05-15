@@ -254,6 +254,26 @@ class GrayScale(object):
         image = image.convert("L")
         return image, location
 
+    def inverse(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
+        """
+        Inverse transformation logic
+
+        Parameters
+        ----------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (grayscale image and modified coordinates)
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Sample (image and localization's mark coordinates)
+        """
+        image, location = sample
+        image = image.convert("RGB")
+        return image, location
+
 
 class ToTensor(object):
     """
@@ -269,7 +289,7 @@ class ToTensor(object):
 
         Parameters
         ----------
-        sample: Tuple[Any, Any]
+        sample: Tuple[PIL.Image.Image, numpy.array]
             Sample to transform (image and localization's mark coordinates)
 
         Returns
@@ -280,4 +300,25 @@ class ToTensor(object):
         image, location = sample
         image = F.to_tensor(image).to(torch.float)
         location = torch.from_numpy(location).to(torch.float).view(-1)
+        return image, location
+
+    def inverse(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
+        """
+        Inverse transform logic
+
+        Parameters
+        ----------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Transformed sample (torch.Tensor image and torch.Tensor coordinates)
+
+        Returns
+        -------
+        sample: Tuple[Any, Any]
+            Sample (image and localization's mark coordinates)
+        """
+        image, location = sample
+        image = F.to_pil_image(image)
+        location = location.numpy()
         return image, location

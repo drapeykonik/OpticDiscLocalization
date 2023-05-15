@@ -1,6 +1,6 @@
 pipeline:
   device: "cuda"
-  epochs: 5
+  epochs: 25
 
 data:
   train:
@@ -20,10 +20,10 @@ transforms:
   train:
     - transform: "Crop"
       params:
-        top: 288
-        left: 0
-        height: 2000
-        width: 3200
+        top: 0
+        left: 260
+        height: 2845
+        width: 3425
     - transform: "Resize"
       params:
         output_size: 512
@@ -31,10 +31,10 @@ transforms:
   valid:
     - transform: "Crop"
       params:
-        top: 288
-        left: 0
-        height: 2000
-        width: 3200
+        top: 0
+        left: 260
+        height: 2845
+        width: 3425
     - transform: "Resize"
       params:
         output_size: 512
@@ -42,10 +42,10 @@ transforms:
   test:
     - transform: "Crop"
       params:
-        top: 288
-        left: 0
-        height: 2000
-        width: 3200
+        top: 0
+        left: 260
+        height: 2845
+        width: 3425
     - transform: "Resize"
       params:
         output_size: 512
@@ -69,7 +69,7 @@ optimizer:
 lr_scheduler:
   type: "ExponentialLR"
   params:
-    gamma: 0.5
+    gamma: 0.95
 
 logger:
   path: "none"

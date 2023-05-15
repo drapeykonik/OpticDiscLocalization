@@ -1,7 +1,9 @@
+import os
 from typing import Callable, Dict, List, Tuple
 
 import numpy as np
 import torch
+from PIL import Image
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import transforms as tfs
@@ -299,9 +301,7 @@ class Pipeline:
         for epoch in pbar:
             if epoch != 0:
                 pbar.set_description(
-                    f"""Epoch {epoch + 1}.
-                                         Train loss: {round(train_losses[-1], 4)}.
-                                         Valid loss: {round(valid_losses[-1], 4)}"""
+                    f"""Epoch {epoch + 1}. Train loss: {round(train_losses[-1], 2)}. Valid loss: {round(valid_losses[-1], 2)}"""
                 )
 
             train_losses_epoch = self.__train_epoch()
@@ -309,5 +309,66 @@ class Pipeline:
 
             train_losses.append(np.mean(train_losses_epoch))
             valid_losses.append(np.mean(valid_losses_epoch))
+            self.scheduler.step()
 
         return train_losses, valid_losses
+
+    def test(self) -> None:
+        """
+        Method to perform testing the model
+        using test dataset
+
+        Returns
+        -------
+        losses: List[float]
+            Losses after testing
+        """
+        losses = []
+
+        self.model.eval()
+        with torch.no_grad():
+            for images, locations in self.data_loaders["test"]:
+                pred_locations = self.model(images.to(self.device))
+                loss = self.criterion(
+                    locations.to(self.device), pred_locations
+                )
+                losses.append(loss.item())
+
+        return losses
+
+    def evaluate(
+        self, image: Image.Image
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Make a model prediction for specified image
+
+        Perameters
+        ----------
+        image: PIL.Image.Image
+            Image for localization mark coodinates predicting
+
+        Returns
+        -------
+        sample: Tuple[torch.Tensor, torch.Tensor]
+            Sample (transformed image and predicted localization mark coordinates)
+        """
+        tfs_image, _ = self.data_loaders["test"].dataset.transform(
+            (image, np.array([0, 0]))
+        )
+        location = self.model(image.view((-1, *image.shape)).to(self.device))
+        return tfs_image, location
+
+    def save_model(self, path: os.PathLike) -> None:
+        """
+        Method to save model by path
+
+        Parameters
+        ----------
+        path: os.PathLike
+            Path to save the model
+
+        Returns
+        -------
+        None
+        """
+        torch.save(self.model.state_dict(), os.path.join(path, "model.pth"))
