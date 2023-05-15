@@ -50,3 +50,6 @@ exclude = '''
 | build   
 )/ 
 '''
+
+[tool.interrogate]
+exclude = ["src/ssd/mmdetection/"]
