@@ -11,10 +11,9 @@ from torchvision import transforms as tfs
 from tqdm import tqdm
 
 from exp_runner.config import (Config, DataConfig, DatasetConfig,
-                               LearningRateSchedulerConfig, LoggerConfig,
-                               LossConfig, ModelConfig, OptimizerConfig,
-                               PipelineConfig, TransformationsConfig,
-                               TransformConfig)
+                               LearningRateSchedulerConfig, LossConfig,
+                               ModelConfig, OptimizerConfig, PipelineConfig,
+                               TransformationsConfig, TransformConfig)
 from vggregressor.dataset import FundusDataset
 
 
@@ -52,7 +51,6 @@ class Pipeline:
         self.scheduler = Pipeline.__create_scheduler(
             config.lr_scheduler, self.optimizer
         )
-        self.logger = None
 
     @staticmethod
     def __create_model(model_config: ModelConfig) -> nn.Module:
@@ -296,7 +294,7 @@ class Pipeline:
                 self.logger.add_scalar(
                     "Valid loss",
                     loss.item(),
-                    epoch * len(self.data_loaders["valid"] + i),
+                    epoch * len(self.data_loaders["valid"]) + i,
                 )
 
         return valid_losses_epoch
@@ -320,8 +318,8 @@ class Pipeline:
                     f"""Epoch {epoch + 1}. Train loss: {round(train_losses[-1], 2)}. Valid loss: {round(valid_losses[-1], 2)}"""
                 )
 
-            train_losses_epoch = self.__train_epoch()
-            valid_losses_epoch = self.__valid_epoch()
+            train_losses_epoch = self.__train_epoch(epoch)
+            valid_losses_epoch = self.__valid_epoch(epoch)
 
             train_losses.append(np.mean(train_losses_epoch))
             valid_losses.append(np.mean(valid_losses_epoch))
@@ -371,7 +369,9 @@ class Pipeline:
         tfs_image, _ = self.data_loaders["test"].dataset.transform(
             (image, np.array([0, 0]))
         )
-        location = self.model(image.view((-1, *image.shape)).to(self.device))
+        location = self.model(
+            tfs_image.view((-1, *tfs_image.shape)).to(self.device)
+        )
         return tfs_image, location
 
     def inverse_transform(

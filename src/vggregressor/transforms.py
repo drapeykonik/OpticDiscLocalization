@@ -369,6 +369,6 @@ class ToTensor(object):
             Sample (image and localization's mark coordinates)
         """
         image, location = sample
-        image = F.to_pil_image(image)
-        location = location.numpy()
+        image = F.to_pil_image(image.cpu().detach())
+        location = location.cpu().detach().numpy()
         return image, location

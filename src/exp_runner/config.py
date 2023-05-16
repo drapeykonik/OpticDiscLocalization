@@ -161,19 +161,6 @@ class LearningRateSchedulerConfig(BaseModel):
     params: Optional[Dict]
 
 
-class LoggerConfig(BaseModel):
-    """
-    Class for defining experiments logger
-
-    Parameters
-    ----------
-    path: str
-        Path to logs folder
-    """
-
-    path: str
-
-
 T = TypeVar("T", bound="Config")
 
 
@@ -195,8 +182,6 @@ class Config(BaseModel):
         Config part for optimizer
     lr_scheduler: LearningRateSchedulerConfig
         Config part for learning rate scheduler
-    logger: LoggerConfig
-        Config part for logger
     """
 
     pipeline: PipelineConfig
@@ -206,7 +191,6 @@ class Config(BaseModel):
     loss: LossConfig
     optimizer: OptimizerConfig
     lr_scheduler: LearningRateSchedulerConfig
-    logger: LoggerConfig
 
     @classmethod
     def parse(cls: Type[T], path: str) -> T:

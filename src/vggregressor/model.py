@@ -34,7 +34,7 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),
         )
-        self.pool0 = nn.MaxPool2d(kernel_size=2)
+        self.pool0 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 256x256
         self.conv1 = nn.Sequential(
             nn.Conv2d(
@@ -48,7 +48,7 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(),
         )
-        self.pool1 = nn.MaxPool2d(kernel_size=2)
+        self.pool1 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 128x128
         self.conv2 = nn.Sequential(
             nn.Conv2d(
@@ -72,7 +72,7 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
         )
-        self.pool2 = nn.MaxPool2d(kernel_size=2)
+        self.pool2 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 64x64
         self.conv3 = nn.Sequential(
             nn.Conv2d(
@@ -96,7 +96,7 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(),
         )
-        self.pool3 = nn.MaxPool2d(kernel_size=2)
+        self.pool3 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 32x32
         self.conv4 = nn.Sequential(
             nn.Conv2d(
@@ -120,7 +120,7 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(),
         )
-        self.pool4 = nn.MaxPool2d(kernel_size=2)
+        self.pool4 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 16x16
         self.conv5 = nn.Sequential(
             nn.Conv2d(
@@ -144,7 +144,7 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(),
         )
-        self.pool5 = nn.MaxPool2d(kernel_size=2)
+        self.pool5 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 8x8
         self.conv6 = nn.Sequential(
             nn.Conv2d(
@@ -168,7 +168,7 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(),
         )
-        self.pool6 = nn.MaxPool2d(kernel_size=2)
+        self.pool6 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 4x4
         self.conv7 = nn.Sequential(
             nn.Conv2d(
@@ -192,10 +192,12 @@ class VGGRegressor(nn.Module):
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(),
         )
-        self.pool7 = nn.MaxPool2d(kernel_size=2)
+        self.pool7 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 2x2
         self.fc0 = nn.Linear(in_features=2 * 2 * 512, out_features=2048)
+        self.dropout0 = nn.Dropout(0.5)
         self.fc1 = nn.Linear(in_features=2048, out_features=512)
+        self.dropout1 = nn.Dropout(0.25)
         self.fc2 = nn.Linear(in_features=512, out_features=2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -222,7 +224,7 @@ class VGGRegressor(nn.Module):
         x = self.pool6(self.conv6(x))
         x = self.pool7(self.conv7(x))
         x = x.view(-1, 2 * 2 * 512)
-        x = nn.functional.relu(self.fc0(x))
-        x = nn.functional.relu(self.fc1(x))
-        x = nn.functional.relu(self.fc2(x))
+        x = self.dropout0(nn.functional.relu(self.fc0(x)))
+        x = self.dropout1(nn.functional.relu(self.fc1(x)))
+        x = self.fc2(x)
         return x
