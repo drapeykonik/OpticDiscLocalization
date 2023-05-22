@@ -31,3 +31,7 @@ data/processed/localization: data/raw/localization src/data/process.py
 
 run: data/processed/localization
 	poetry run python src/run.py ${model} ${experiment}
+
+ssd_checkpoint: 
+	mkdir src/ssd/mmdetection/checkpoints
+	wget -O src/ssd/mmdetection/checkpoints/ssd512.pth https://download.openmmlab.com/mmdetection/v2.0/ssd/ssd512_coco/ssd512_coco_20210803_022849-0a47a1ca.pth
