@@ -5,6 +5,11 @@ initialize_git:
 install: 
 	@echo "Installing..."
 	poetry install
+	poetry run mim install mmengine
+	poetry run mim install "mmcv>=2.0.0"
+	cd src/ssd/mmdetection
+	poetry run pip install -v -e .
+	cd ../../..
 	poetry run pre-commit install
 
 activate:
@@ -29,3 +34,8 @@ run: data/processed/localization
 
 evaluate: 
 	poetry run python src/evaluate.py ${model} ${experiment} ${image}
+
+ssd_checkpoint: 
+	mkdir src/ssd/mmdetection/checkpoints
+	wget -O src/ssd/mmdetection/checkpoints/ssd512.pth https://download.openmmlab.com/mmdetection/v2.0/ssd/ssd512_coco/ssd512_coco_20210803_022849-0a47a1ca.pth
+

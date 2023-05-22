@@ -1,0 +1,3 @@
+[submodule "src/ssd/mmdetection"]
+	path = src/ssd/mmdetection
+	url = https://github.com/open-mmlab/mmdetection.git
