@@ -26,3 +26,6 @@ data/processed/localization: data/raw/localization src/data/process.py
 
 run: data/processed/localization
 	poetry run python src/run.py ${model} ${experiment}
+
+evaluate: 
+	poetry run python src/evaluate.py ${model} ${experiment} ${image}

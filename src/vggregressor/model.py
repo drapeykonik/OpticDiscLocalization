@@ -61,142 +61,82 @@ class VGGRegressor(nn.Module):
             ),
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
-            nn.Conv2d(
-                in_channels=256, out_channels=256, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=256),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=256, out_channels=256, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=256),
-            nn.ReLU(),
         )
         self.pool2 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 64x64
         self.conv3 = nn.Sequential(
             nn.Conv2d(
-                in_channels=256, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
         )
         self.pool3 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 32x32
         self.conv4 = nn.Sequential(
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
         )
         self.pool4 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 16x16
         self.conv5 = nn.Sequential(
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
         )
         self.pool5 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 8x8
         self.conv6 = nn.Sequential(
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
         )
         self.pool6 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 4x4
         self.conv7 = nn.Sequential(
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
             nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
+                in_channels=256, out_channels=256, kernel_size=3, padding=1
             ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=512, out_channels=512, kernel_size=3, padding=1
-            ),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(),
         )
         self.pool7 = nn.Sequential(nn.MaxPool2d(kernel_size=2), nn.ReLU())
         # 2x2
-        self.fc0 = nn.Linear(in_features=2 * 2 * 512, out_features=2048)
-        self.dropout0 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(in_features=2048, out_features=512)
+        self.fc0 = nn.Linear(in_features=2 * 2 * 256, out_features=1024)
+        self.dropout0 = nn.Dropout(0.25)
+        self.fc1 = nn.Linear(in_features=1024, out_features=512)
         self.dropout1 = nn.Dropout(0.25)
         self.fc2 = nn.Linear(in_features=512, out_features=2)
 
@@ -223,7 +163,7 @@ class VGGRegressor(nn.Module):
         x = self.pool5(self.conv5(x))
         x = self.pool6(self.conv6(x))
         x = self.pool7(self.conv7(x))
-        x = x.view(-1, 2 * 2 * 512)
+        x = x.view(-1, 2 * 2 * 256)
         x = self.dropout0(nn.functional.relu(self.fc0(x)))
         x = self.dropout1(nn.functional.relu(self.fc1(x)))
         x = self.fc2(x)

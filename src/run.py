@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 from exp_runner.runner import run
 

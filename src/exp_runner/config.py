@@ -210,3 +210,19 @@ class Config(BaseModel):
         with open(path, "r") as yaml_cfg:
             cfg = cls.parse_raw(json.dumps(safe_load(yaml_cfg)))
         return cfg
+
+    def get_hparams(self):
+        hparams = dict()
+        hparams["device"] = self.pipeline.device
+        hparams["epochs"] = self.pipeline.epochs
+        hparams["train batch size"] = self.data.train.batch_size
+        hparams["loss"] = self.loss.type
+        for param, value in self.loss.params.items():
+            hparams["loss/" + param] = str(value)
+        hparams["optimizer"] = self.optimizer.type
+        for param, value in self.optimizer.params.items():
+            hparams["optimizer/" + param] = str(value)
+        hparams["lr_scheduler"] = self.lr_scheduler.type
+        for param, value in self.lr_scheduler.params.items():
+            hparams["lr_scheduler/" + param] = str(value)
+        return hparams

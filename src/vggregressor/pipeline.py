@@ -1,8 +1,10 @@
+import io
 import os
 from typing import Callable, Dict, List, Tuple
 
 import numpy as np
 import torch
+from matplotlib import pyplot as plt
 from PIL import Image
 from torch import nn
 from torch.utils.data import DataLoader
@@ -37,6 +39,7 @@ class Pipeline:
     def __init__(self, config: Config, log_dir: os.PathLike) -> None:
         self.config = config
         self.logger = SummaryWriter(os.path.join("experiments", log_dir))
+        self.experiment = log_dir.split("/")[-1]
 
         self.device = config.pipeline.device
         self.epochs = config.pipeline.epochs
@@ -44,6 +47,9 @@ class Pipeline:
         self.data_loaders = Pipeline.__create_data_loaders(
             config.data, config.transforms
         )
+        self.valid_sample_indices = torch.randint(
+            low=0, high=len(self.data_loaders["valid"].dataset), size=(4,)
+        ).tolist()
         self.criterion = Pipeline.__create_loss(config.loss)
         self.optimizer = Pipeline.__create_optimizer(
             config.optimizer, self.model
@@ -262,7 +268,7 @@ class Pipeline:
             loss = self.criterion(locations.to(self.device), pred_locations)
             train_losses_epoch.append(loss.item())
             self.logger.add_scalar(
-                "Train loss",
+                "Loss (batch)/train",
                 loss.item(),
                 epoch * len(self.data_loaders["train"]) + i,
             )
@@ -292,10 +298,11 @@ class Pipeline:
                 )
                 valid_losses_epoch.append(loss.item())
                 self.logger.add_scalar(
-                    "Valid loss",
+                    "Loss (batch)/valid",
                     loss.item(),
                     epoch * len(self.data_loaders["valid"]) + i,
                 )
+            self.log_predicted_sample(epoch)
 
         return valid_losses_epoch
 
@@ -309,6 +316,8 @@ class Pipeline:
             Losses after training/validation cycle from each epoch
         """
         train_losses, valid_losses = [], []
+        best_model_params = self.model.state_dict()
+        best_loss = np.inf
         torch.cuda.empty_cache()
         pbar = tqdm(range(self.epochs))
         pbar.set_description("Epoch 1")
@@ -322,12 +331,22 @@ class Pipeline:
             valid_losses_epoch = self.__valid_epoch(epoch)
 
             train_losses.append(np.mean(train_losses_epoch))
+            self.logger.add_scalar(
+                "Loss (epoch)/train", train_losses[-1], epoch
+            )
             valid_losses.append(np.mean(valid_losses_epoch))
+            self.logger.add_scalar(
+                "Loss (epoch)/valid", valid_losses[-1], epoch
+            )
             self.scheduler.step()
+            if best_loss > valid_losses[-1]:
+                best_model_params = self.model.state_dict()
+                best_loss = valid_losses[-1]
 
+        self.model.load_state_dict(best_model_params)
         return train_losses, valid_losses
 
-    def test(self) -> None:
+    def test(self) -> float:
         """
         Method to perform testing the model
         using test dataset
@@ -348,7 +367,7 @@ class Pipeline:
                 )
                 losses.append(loss.item())
 
-        return losses
+        return np.mean(losses)
 
     def evaluate(
         self, image: Image.Image
@@ -413,3 +432,84 @@ class Pipeline:
         None
         """
         torch.save(self.model.state_dict(), os.path.join(path, "model.pth"))
+
+    def load_model(self) -> None:
+        """
+        Method to load the trained model from state dictionary file
+        """
+        self.model.load_state_dict(
+            torch.load(
+                os.path.join(
+                    "experiments/vggregressor", self.experiment, "model.pth"
+                )
+            )
+        )
+        self.model.eval()
+
+    def log_hparams(self) -> None:
+        """
+        Method to log hyperparameters and experiment
+        value of loss on test dataset in TensorBoard
+        """
+        hparams = self.config.get_hparams()
+        loss = self.test()
+        self.logger.add_hparams(hparams, {"hparam/test_loss": loss})
+
+    def log_predicted_sample(self, epoch: int):
+        """
+        Method to log evaluated sample of validation dataset
+        after specified epoch
+
+        Parameters
+        ----------
+        epoch: int
+            Specified epoch
+        """
+        SAMPLES = len(self.valid_sample_indices)
+        ROWS = 2
+        fig, axes = plt.subplots(
+            ROWS, SAMPLES // ROWS, figsize=(ROWS * 8, SAMPLES // ROWS * 10)
+        )
+        for i in range(ROWS):
+            for j in range(SAMPLES // ROWS):
+                ind = self.valid_sample_indices[i * SAMPLES // ROWS + j]
+                image, true_location = self.data_loaders["valid"].dataset.get(
+                    ind
+                )
+                tfs_image, _ = self.data_loaders["valid"].dataset.transform(
+                    (image, np.array([0, 0]))
+                )
+                location = self.model(
+                    tfs_image.view(-1, *tfs_image.shape).to(self.device)
+                )
+                _, location = self.inverse_transform(
+                    "valid", (tfs_image, location)
+                )
+
+                axes[i][j].imshow(image)
+                axes[i][j].scatter(
+                    location[0][0],
+                    location[0][1],
+                    marker="+",
+                    color="green",
+                    s=100,
+                    label="Predicted",
+                )
+                axes[i][j].scatter(
+                    true_location[0],
+                    true_location[1],
+                    marker="+",
+                    color="blue",
+                    s=100,
+                    label="True",
+                )
+                axes[i][j].legend(loc="upper right")
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0, hspace=0)
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.grid(False)
+        plt.savefig(buf, format="jpg")
+        buf.seek(0)
+        image = tfs.ToTensor()(Image.open(buf))
+        self.logger.add_image(self.experiment, image, epoch)

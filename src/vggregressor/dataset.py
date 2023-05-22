@@ -60,14 +60,31 @@ class FundusDataset(Dataset):
         sample: Tuple[PIL.Image.Image, numpy.array]
             Sample from dataset (image and localization mark coordinates)
         """
+        sample = self.get(index)
+
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+    def get(self, index: int) -> Tuple[Image.Image, np.array]:
+        """
+        Getting dataset samples without transforms
+
+        Parameters
+        ----------
+        index: int
+            Index of the sample
+
+        Returns
+        -------
+        sample: Tuple[PIL.Image.Image, numpy.array]
+            Sample from dataset (image and localization mark coordinates)
+            without transforms
+        """
         image_path = os.path.join(
             self.data_root, self.ann_frame.iloc[index, 1]
         )
         image = Image.open(image_path)
         location = self.ann_frame.iloc[index, 2:]
         location = np.array(location).astype("float").reshape(-1)
-        sample = (image, location)
-
-        if self.transform:
-            sample = self.transform(sample)
-        return sample
+        return image, location

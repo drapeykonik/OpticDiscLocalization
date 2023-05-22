@@ -236,8 +236,8 @@ class RandomRotation(object):
             ]
         )
         location = (
-            location - np.array([[w / 2, h / 2]])
-        ) @ rotation_matrix + np.array([[w / 2, h / 2]])
+            location - np.array([w / 2, h / 2])
+        ) @ rotation_matrix + np.array([w / 2, h / 2])
         return image, location
 
 
