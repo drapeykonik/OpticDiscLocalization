@@ -275,8 +275,12 @@ class ColorChannel(object):
         """
         image, location = sample
         channels = image.split()
-        image = Image.merge("L", (channels[self.channel],))
-        return image, location
+        return channels[self.channel], location
+
+    def inverse(
+        self, sample: Tuple[Image.Image, np.array]
+    ) -> Tuple[Image.Image, np.array]:
+        return sample
 
 
 class GrayScale(object):
@@ -370,5 +374,5 @@ class ToTensor(object):
         """
         image, location = sample
         image = F.to_pil_image(image.cpu().detach())
-        location = location.cpu().detach().numpy()
+        location = location.cpu().detach().numpy().flatten()
         return image, location

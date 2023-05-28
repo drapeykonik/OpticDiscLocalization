@@ -1,87 +1,116 @@
+import json
 import os
+from typing import List, Tuple
 
-import mmcv
-from mmdetection.mmdet.apis import (inference_detector, init_detector,
-                                    show_result_pyplot, train_detector)
-from mmdetection.mmdet.datasets import build_dataset
-from mmdetection.mmdet.models import build_detector
+import numpy as np
+import torch
+from mmcv import Compose
+from mmdet import apis
+from mmdet.utils import get_test_pipeline_cfg
+from mmengine.config import Config
+from mmengine.runner import Runner
+from PIL import Image, ImageDraw
+from torch.nn.functional import mse_loss
 
-from exp_runner.config import (Config, DataConfig, DatasetConfig,
-                               LearningRateSchedulerConfig, LoggerConfig,
-                               LossConfig, ModelConfig, OptimizerConfig,
-                               PipelineConfig, TransformationsConfig,
-                               TransformConfig)
-
-SSD_CONFIG = "mmdetection/configs/ssd/ssd512_coco.py"
+from src.metrics import localization_accuracy
 
 
 class Pipeline:
-    def _init__(self, config: Config, log_dir: os.PathLike) -> None:
-        self.config = mmcv.Config.fromfile(SSD_CONFIG)
-        self.config.work_dir = log_dir
-        self.load_from = "ssd/mmdetection/checkpoints/ssd512.pth"
-
-        self.datasets = dict()
-        for part in ("train", "valid", "test"):
-            self.datasets[part] = build_dataset(self.config.data[part])
-
-        self.model = build_detector(
-            self.config.model,
-            train_cfg=self.config.get("train_cfg"),
-            valid_cfg=self.config.get("valid_cfg"),
-            test_cfg=self.config.get("test_cfg"),
-        )
-        self.model.CLASSES = self.datasets["train"].METAINFO["classes"]
-
-    def __configure_pipeline(self, pipeline_config: PipelineConfig) -> None:
-        self.config.device = pipeline_config.device
-        self.config.runner.max_epochs = pipeline_config.epochs
-
-    def __configure_data(self, data_config: DataConfig) -> None:
-        self.config.data_root = data_config.data_root
-        self.config.dataset_type = "FundusDataset"
-        classes = ("optic_disc",)
-
-        self.data.samples_per_gpu = data_config.train.batch_size
-
-        self.config.data.train.dataset.img_prefix = data_config.train.path
-        self.config.data.train.dataset.classes = classes
-        self.config.data.train.dataset.ann_file = os.path.join(
-            data_config.train.path, data_config.train.annotations
-        )
-
-        self.config.data.valid.dataset.img_prefix = data_config.valid.path
-        self.config.data.valid.dataset.classes = classes
-        self.config.data.valid.dataset.ann_file = os.path.join(
-            data_config.valid.path, data_config.valid.annotations
-        )
-
-        self.config.data.test.dataset.img_prefix = data_config.test.path
-        self.config.data.test.dataset.classes = classes
-        self.config.data.test.dataset.ann_file = os.path.join(
-            data_config.test.path, data_config.test.annotations
-        )
-
-    def __configure_transforms(
-        self, transforms_config: TransformationsConfig
-    ) -> None:
-        pass
-
-    def __configure_optimizer(self, optimizer_config: OptimizerConfig) -> None:
-        self.config.optimizer = dict(
-            type=optimizer_config.type, **optimizer_config.params
-        )
+    def __init__(self, config: str, log_dir: os.PathLike = None) -> None:
+        self.config_path = config
+        self.log_dir = log_dir
+        self.config = Config.fromfile(config)
+        if log_dir:
+            self.config.work_dir = log_dir
+            self.config.visualizer = dict(
+                type="DetLocalVisualizer",
+                vis_backends=[
+                    dict(
+                        type="TensorboardVisBackend",
+                        save_dir=self.log_dir + "/logs",
+                    )
+                ],
+            )
 
     def fit(self):
-        train_detector(
-            self.model,
-            self.datasets.values(),
-            self.config,
-            distributed=False,
-            validate=True,
+        runner = Runner.from_cfg(self.config)
+        # self.test()
+        runner.train()
+        # os.rename(os.path.join(self.log_dir, f"best_coco_bbox_mAP_epoch_{self.config.train_cfg.max_epochs}.pth"),
+        #          os.path.join(self.log_dir, "model.pth"))
+        mse, accuracies = self.test()
+        print("MSE: ", mse)
+        print(
+            "; ".join(
+                f"LOC_ACC_{r}: {a}"
+                for r, a in zip([25, 50, 75, 100], accuracies)
+            )
         )
 
-    def evaluate(self, image_path: os.PathLike):
-        image = mmcv.imread(image_path)
-        result = inference_detector(self.model, image)
-        show_result_pyplot(self.model, image, result, score_thr=0.8)
+    def test(self) -> Tuple[float, List[float]]:
+        annotations = json.load(
+            open(
+                self.config.test_dataloader.dataset.data_root
+                + "/"
+                + self.config.test_dataloader.dataset.ann_file
+            )
+        )
+        locations, pred_locations = [], []
+        losses = []
+        for image in annotations["images"]:
+            annotation = annotations["annotations"][image["id"]]
+            image = (
+                self.config.test_dataloader.dataset.data_root
+                + "/"
+                + self.config.test_dataloader.dataset.data_prefix.img
+                + image["file_name"]
+            )
+            result = apis.inference_detector(self.model, image)
+            location = (
+                torch.Tensor(annotation["bbox"][:2])
+                + torch.Tensor(annotation["bbox"][2:]) / 2
+            )
+            pred_location = (
+                result.pred_instances.bboxes[0, :2]
+                + result.pred_instances.bboxes[0, 2:]
+            ) / 2
+            pred_location = pred_location.cpu().detach()
+            score = result.pred_instances.scores[0]
+            locations.append(location)
+            pred_locations.append(pred_location)
+            losses.append(mse_loss(location, pred_location))
+        accuracies = [
+            localization_accuracy(
+                torch.stack(locations), torch.stack(pred_locations), r
+            )
+            for r in (25, 50, 75, 100)
+        ]
+        return np.mean(losses), accuracies
+
+    def inference(self, image: Image.Image) -> np.array:
+        result = apis.inference_detector(self.model, np.array(image))
+        pred_location = (
+            result.pred_instances.bboxes[0, :2]
+            + result.pred_instances.bboxes[0, 2:]
+        ) / 2
+        return pred_location.cpu().detach().numpy()
+
+    def process_image(self, image: Image.Image) -> Image.Image:
+        result = apis.inference_detector(self.model, np.array(image))
+        location = (
+            result.pred_instances.bboxes[0, :2]
+            + result.pred_instances.bboxes[0, 2:]
+        ) / 2
+        x, y = location.cpu().detach().numpy().tolist()
+        draw = ImageDraw.Draw(image)
+        draw.line([(x - 60, y), (x + 60, y)], fill="blue", width=12)
+        draw.line([(x, y - 60), (x, y + 60)], fill="blue", width=12)
+        return image
+
+    def load_model(self) -> None:
+        self.model = apis.init_detector(
+            self.config,
+            os.path.join(
+                "/".join(self.config_path.split("/")[:-1]), "model.pth"
+            ),
+        )

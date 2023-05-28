@@ -5,18 +5,20 @@ from typing import Callable, Dict, List, Tuple
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
-from PIL import Image
+from PIL import Image, ImageDraw
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms as tfs
 from tqdm import tqdm
 
-from exp_runner.config import (Config, DataConfig, DatasetConfig,
-                               LearningRateSchedulerConfig, LossConfig,
-                               ModelConfig, OptimizerConfig, PipelineConfig,
-                               TransformationsConfig, TransformConfig)
-from vggregressor.dataset import FundusDataset
+from src.exp_runner.config import (Config, DataConfig, DatasetConfig,
+                                   LearningRateSchedulerConfig, LossConfig,
+                                   ModelConfig, OptimizerConfig,
+                                   PipelineConfig, TransformationsConfig,
+                                   TransformConfig)
+from src.metrics import localization_accuracy
+from src.vggregressor.dataset import FundusDataset
 
 
 class Pipeline:
@@ -30,32 +32,34 @@ class Pipeline:
 
     Parameters
     ----------
-    config: Config
-        Config for full pipeline
+    config: str
+        Path to config for full pipeline
     log_dir: os.PathLike
         Directory for logs
     """
 
-    def __init__(self, config: Config, log_dir: os.PathLike) -> None:
-        self.config = config
-        self.logger = SummaryWriter(os.path.join("experiments", log_dir))
-        self.experiment = log_dir.split("/")[-1]
+    def __init__(self, config: str, log_dir: os.PathLike = None) -> None:
+        self.config = Config.parse(config)
+        self.config_path = config
+        if log_dir:
+            self.logger = SummaryWriter(os.path.join(log_dir, "logs"))
+            self.experiment = log_dir.split("/")[-1]
 
-        self.device = config.pipeline.device
-        self.epochs = config.pipeline.epochs
-        self.model = Pipeline.__create_model(config.model).to(self.device)
+        self.device = self.config.pipeline.device
+        self.epochs = self.config.pipeline.epochs
+        self.model = Pipeline.__create_model(self.config.model).to(self.device)
         self.data_loaders = Pipeline.__create_data_loaders(
-            config.data, config.transforms
+            self.config.data, self.config.transforms
         )
         self.valid_sample_indices = torch.randint(
             low=0, high=len(self.data_loaders["valid"].dataset), size=(4,)
         ).tolist()
-        self.criterion = Pipeline.__create_loss(config.loss)
+        self.criterion = Pipeline.__create_loss(self.config.loss)
         self.optimizer = Pipeline.__create_optimizer(
-            config.optimizer, self.model
+            self.config.optimizer, self.model
         )
         self.scheduler = Pipeline.__create_scheduler(
-            config.lr_scheduler, self.optimizer
+            self.config.lr_scheduler, self.optimizer
         )
 
     @staticmethod
@@ -73,7 +77,7 @@ class Pipeline:
         model: nn.Module
             Created model
         """
-        exec("from vggregressor.model import " + model_config.name)
+        exec("from src.vggregressor.model import " + model_config.name)
         return (
             eval(model_config.name + "(**model_config.params)")
             if model_config.params is not None
@@ -100,7 +104,7 @@ class Pipeline:
         """
         transforms = []
         for t in transform_configs:
-            exec("from vggregressor.transforms import " + t.transform)
+            exec("from src.vggregressor.transforms import " + t.transform)
             transforms.append(
                 (
                     eval(t.transform + "(**t.params)")
@@ -338,15 +342,23 @@ class Pipeline:
             self.logger.add_scalar(
                 "Loss (epoch)/valid", valid_losses[-1], epoch
             )
+            self.log_loc_acc(epoch)
+            self.logger.add_scalar(
+                "Learning rate", self.scheduler.get_last_lr()[0], epoch
+            )
             self.scheduler.step()
             if best_loss > valid_losses[-1]:
                 best_model_params = self.model.state_dict()
                 best_loss = valid_losses[-1]
 
         self.model.load_state_dict(best_model_params)
+        self.save_model(
+            os.path.join("experiments", "vggregressor", self.experiment)
+        )
+        self.log_hparams()
         return train_losses, valid_losses
 
-    def test(self) -> float:
+    def test(self) -> Tuple[float, List[float]]:
         """
         Method to perform testing the model
         using test dataset
@@ -359,19 +371,29 @@ class Pipeline:
         losses = []
 
         self.model.eval()
+        pred_locations, locations = [], []
         with torch.no_grad():
-            for images, locations in self.data_loaders["test"]:
-                pred_locations = self.model(images.to(self.device))
+            for idx in range(len(self.data_loaders["test"].dataset)):
+                image, location = self.data_loaders["test"].dataset.get(idx)
+                tfs_image, pred_location = self.inference(image)
                 loss = self.criterion(
-                    locations.to(self.device), pred_locations
+                    torch.from_numpy(location),
+                    torch.from_numpy(pred_location.flatten()),
                 )
                 losses.append(loss.item())
+                pred_locations.append(
+                    torch.from_numpy(pred_location.flatten())
+                )
+                locations.append(torch.from_numpy(location))
+        loc_accuracies = [
+            localization_accuracy(
+                torch.stack(locations), torch.stack(pred_locations), r
+            )
+            for r in (25, 50, 75, 100)
+        ]
+        return np.mean(losses), loc_accuracies
 
-        return np.mean(losses)
-
-    def evaluate(
-        self, image: Image.Image
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def inference(self, image: Image.Image) -> Tuple[Image.Image, np.array]:
         """
         Make a model prediction for specified image
 
@@ -391,7 +413,18 @@ class Pipeline:
         location = self.model(
             tfs_image.view((-1, *tfs_image.shape)).to(self.device)
         )
-        return tfs_image, location
+        tfs_image, location = self.inverse_transform(
+            "test", (tfs_image, location)
+        )
+        return image, location
+
+    def process_image(self, image: Image.Image) -> Image.Image:
+        image, location = self.inference(image)
+        x, y = location.tolist()
+        draw = ImageDraw.Draw(image)
+        draw.line([(x - 60, y), (x + 60, y)], fill="blue", width=12)
+        draw.line([(x, y - 60), (x, y + 60)], fill="blue", width=12)
+        return image
 
     def inverse_transform(
         self, target: str, sample: Tuple[torch.Tensor, torch.Tensor]
@@ -440,7 +473,7 @@ class Pipeline:
         self.model.load_state_dict(
             torch.load(
                 os.path.join(
-                    "experiments/vggregressor", self.experiment, "model.pth"
+                    "/".join(self.config_path.split("/")[:-1]), "model.pth"
                 )
             )
         )
@@ -452,8 +485,17 @@ class Pipeline:
         value of loss on test dataset in TensorBoard
         """
         hparams = self.config.get_hparams()
-        loss = self.test()
-        self.logger.add_hparams(hparams, {"hparam/test_loss": loss})
+        loss, accuracies = self.test()
+        hp = dict()
+        hp["hparam/test_loss"] = loss
+        for r, a in zip([25, 50, 75, 100], accuracies):
+            hp["hparam/loc_acc" + str(r)] = a
+        self.logger.add_hparams(hparams, hp)
+
+    def log_loc_acc(self, epoch: int) -> None:
+        _, loc_accuracies = self.test()
+        for a, r in zip(loc_accuracies, [25, 50, 75, 100]):
+            self.logger.add_scalar(f"loc_acc/r{r}", a, epoch)
 
     def log_predicted_sample(self, epoch: int):
         """
@@ -488,8 +530,8 @@ class Pipeline:
 
                 axes[i][j].imshow(image)
                 axes[i][j].scatter(
-                    location[0][0],
-                    location[0][1],
+                    location[0],
+                    location[1],
                     marker="+",
                     color="green",
                     s=100,

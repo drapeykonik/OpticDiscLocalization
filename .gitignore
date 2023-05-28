@@ -98,3 +98,8 @@ data/*/*
 models/*
 !.gitkeep
 experiments/
+
+mmdetection
+storage
+
+notebooks/results/
